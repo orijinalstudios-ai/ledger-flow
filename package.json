@@ -1,0 +1,24 @@
+{
+  "name": "ledgerflow",
+  "version": "1.0.0",
+  "description": "Fiscal Control & Expense Tracker PWA and Android App",
+  "scripts": {
+    "build": "node build.js",
+    "cap:sync": "node build.js && npx cap sync android",
+    "cap:open": "npx cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/cli": "^8.5.3",
+    "@capacitor/core": "^8.5.3",
+    "@capacitor/filesystem": "^8.1.5",
+    "@capacitor/haptics": "^8.0.2",
+    "@capacitor/share": "^8.0.3",
+    "@capacitor/status-bar": "^8.0.4",
+    "@vercel/blob": "^2.8.1"
+  },
+  "devDependencies": {
+    "vercel": "^65.1.0"
+  }
+}

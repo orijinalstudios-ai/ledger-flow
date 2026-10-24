@@ -1,0 +1,61 @@
+{
+  "id": "/",
+  "name": "LedgerFlow - Fiscal Control & Expense Tracker",
+  "short_name": "LedgerFlow",
+  "description": "Fast office expense tracking, cash float management, and Excel statement generator.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0f131c",
+  "theme_color": "#0f131c",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["finance", "productivity", "business"],
+  "shortcuts": [
+    {
+      "name": "Record Expense",
+      "short_name": "Expense",
+      "description": "Record an expense deduction",
+      "url": "/#record-form",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Record Given Fund",
+      "short_name": "Add Fund",
+      "description": "Add received cash float",
+      "url": "/#overview",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

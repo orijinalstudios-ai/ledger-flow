@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1c1f29"/>
+      <stop offset="100%" stop-color="#0a0e17"/>
+    </linearGradient>
+    <linearGradient id="primaryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6ffbbe"/>
+      <stop offset="50%" stop-color="#4edea3"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background rounded squircle -->
+  <rect width="512" height="512" rx="115" fill="url(#bgGrad)"/>
+  <rect x="16" y="16" width="480" height="480" rx="100" fill="none" stroke="#3c4a42" stroke-width="4" opacity="0.5"/>
+
+  <!-- Glowing Accent Ring -->
+  <circle cx="256" cy="256" r="180" fill="none" stroke="#4edea3" stroke-width="2" opacity="0.15"/>
+
+  <!-- Main Ledger / Wallet Icon -->
+  <g transform="translate(106, 116)" filter="url(#glow)">
+    <!-- Wallet Backing / Ledger Cover -->
+    <rect x="0" y="30" width="300" height="220" rx="36" fill="none" stroke="url(#primaryGrad)" stroke-width="26" />
+    
+    <!-- Ledger Sheet / Document Top -->
+    <path d="M50 30 V-10 C50 -20 60 -30 70 -30 H230 C240 -30 250 -20 250 -10 V30" fill="none" stroke="url(#primaryGrad)" stroke-width="22" stroke-linecap="round" opacity="0.8"/>
+    
+    <!-- Cash Flow Accent Lines -->
+    <path d="M70 140 H230" stroke="url(#primaryGrad)" stroke-width="22" stroke-linecap="round" />
+    <path d="M70 90 H170" stroke="#83c2a9" stroke-width="16" stroke-linecap="round" opacity="0.7" />
+    <path d="M70 190 H190" stroke="#83c2a9" stroke-width="16" stroke-linecap="round" opacity="0.7" />
+
+    <!-- Wallet Clasp / Coin Badge -->
+    <circle cx="230" cy="140" r="28" fill="#1c1f29" stroke="url(#primaryGrad)" stroke-width="14" />
+    <circle cx="230" cy="140" r="8" fill="#4edea3" />
+  </g>
+</svg>
