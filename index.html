@@ -163,6 +163,12 @@
     ::-webkit-scrollbar-thumb:hover {
       background: #4edea3;
     }
+    /* Suppress install UI on native Capacitor app */
+    .native-capacitor-app #btn-pwa-install,
+    .native-capacitor-app #pwa-install-banner,
+    .native-capacitor-app #ios-install-modal {
+      display: none !important;
+    }
   </style>
 </head>
 <body class="bg-background text-on-surface antialiased min-h-screen selection:bg-primary-container selection:text-on-primary-container font-body-md text-body-md">
@@ -189,7 +195,7 @@
       <div class="flex items-center space-x-2 sm:space-x-2.5">
         
         <!-- PWA Install Button (Dynamic) -->
-        <button id="btn-pwa-install" onclick="triggerPwaInstall()" class="flex items-center bg-primary-container text-on-primary-container hover:bg-tertiary-container px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-semibold gap-1 active:scale-95 shadow-sm transition-all" title="Install on phone">
+        <button id="btn-pwa-install" onclick="triggerPwaInstall()" class="hidden flex items-center bg-primary-container text-on-primary-container hover:bg-tertiary-container px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-semibold gap-1 active:scale-95 shadow-sm transition-all" title="Install on phone">
           <span class="material-symbols-outlined text-base">install_mobile</span>
           <span class="hidden sm:inline">Install</span>
         </button>
@@ -1586,8 +1592,8 @@
       if (loader) loader.classList.add('hidden');
     }
 
-    // Initialization
-    document.addEventListener('DOMContentLoaded', () => {
+    // Initialization Handler
+    function startApp() {
       initUI();
       setupScrollSpy();
       initPwa();
@@ -1614,7 +1620,13 @@
       if (window.LedgerAuth) {
         initAuthService();
       }
-    });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', startApp);
+    } else {
+      startApp();
+    }
 
     window.onFirebaseReady = function() {
       if (!authInitialized) {
@@ -2520,6 +2532,11 @@ service cloud.firestore {
       }
 
       window.addEventListener('beforeinstallprompt', (e) => {
+        // Never show install prompt in native Capacitor Android / iOS shell
+        if (typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform && Capacitor.isNativePlatform()) {
+          return;
+        }
+
         e.preventDefault();
         deferredInstallPrompt = e;
         
@@ -2531,8 +2548,9 @@ service cloud.firestore {
         }
       });
 
-      // Show iOS install button if on iPhone and not installed
-      if (isIos() && !isInStandaloneMode()) {
+      // Show iOS install button if on iPhone Safari (not native app and not standalone)
+      const isNativeApp = typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform && Capacitor.isNativePlatform();
+      if (!isNativeApp && isIos() && !isInStandaloneMode()) {
         const installBtn = document.getElementById('btn-pwa-install');
         if (installBtn) installBtn.classList.remove('hidden');
         const installBanner = document.getElementById('pwa-install-banner');
@@ -3895,7 +3913,7 @@ service cloud.firestore {
       }
     }
 
-    function generateCsvExport() {
+    async function generateCsvExport() {
       const txs = getExportTransactions();
       if (txs.length === 0) {
         showToast('No records match the selected export range.', 'error');
@@ -4506,6 +4524,14 @@ service cloud.firestore {
     // ==========================================
     function initNativeCapacitor() {
       if (typeof Capacitor === 'undefined') return;
+
+      // Tag document body to activate native-specific CSS styling
+      document.body.classList.add('native-capacitor-app');
+
+      // Guarantee install prompts and buttons are strictly hidden in native Android
+      document.getElementById('btn-pwa-install')?.classList.add('hidden');
+      document.getElementById('pwa-install-banner')?.classList.add('hidden');
+      document.getElementById('ios-install-modal')?.classList.add('hidden');
 
       // 1. Android Status Bar Styling
       if (Capacitor.isPluginAvailable && Capacitor.isPluginAvailable('StatusBar')) {
