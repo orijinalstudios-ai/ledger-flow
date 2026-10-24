@@ -1,0 +1,8 @@
+{
+  "version": "1.0.1",
+  "versionCode": 2,
+  "releaseDate": "2026-10-24",
+  "title": "Ledger Flow v1.0.1",
+  "notes": "Branded splash screen, performance improvements, and in-app update notifications.",
+  "apkUrl": "https://github.com/orijinalstudios-ai/ledger-flow/releases/latest"
+}

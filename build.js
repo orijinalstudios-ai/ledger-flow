@@ -17,7 +17,8 @@ const filesToCopy = [
   'exceljs.min.js',
   'xlsx.full.min.js',
   'manifest.json',
-  'sw.js'
+  'sw.js',
+  'version.json'
 ];
 
 filesToCopy.forEach(file => {

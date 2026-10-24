@@ -1,4 +1,4 @@
-name: Build Android APK (LedgerFlow)
+name: Build Android APK (Ledger Flow)
 
 on:
   push:
@@ -6,6 +6,9 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build-android:
@@ -46,34 +49,43 @@ jobs:
       - name: Make Gradlew Executable
         run: chmod +x android/gradlew
 
-      - name: Build Debug APK with Gradle
+      - name: Build APK with Gradle
         run: |
           cd android
           ./gradlew assembleDebug
 
-      - name: Upload Debug APK Artifact
+      - name: Prepare Clean Output Directory
+        run: |
+          mkdir -p build-output
+          find android/app/build/outputs/apk/ -name "*.apk" -exec cp {} build-output/ledger_flow.apk \;
+
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: LedgerFlow-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: ledger_flow
+          path: build-output/ledger_flow.apk
           if-no-files-found: error
           retention-days: 30
 
-      - name: Create GitHub Release on Tag
-        if: startsWith(github.ref, 'refs/tags/v')
+      - name: Publish or Update GitHub Release
         uses: softprops/action-gh-release@v2
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
         with:
-          files: android/app/build/outputs/apk/debug/app-debug.apk
-          name: LedgerFlow Android ${{ github.ref_name }}
+          files: build-output/ledger_flow.apk
+          tag_name: latest
+          name: "Ledger Flow Latest Release"
           body: |
-            ### 📱 LedgerFlow Native Android APK Release
-            Download and install `app-debug.apk` directly on any Android device!
+            ### 📱 Ledger Flow Android APK
+            Download **ledger_flow.apk** below to install the latest version on your Android phone!
             
-            **Features Included:**
-            - Native Android APK package with offline-first support
+            **Highlights & Features:**
+            - Native Android APK (`ledger_flow.apk`) with offline-first speed
+            - Clean branded Ledger Flow splash screen
+            - Automatic in-app update notifications for future releases
             - Cloud Firestore sync & Firebase Authentication
             - Native Excel (.xlsx) statement export with Android Share Sheet
-            - Hardware back-button navigation & modal dismissal
-            - Dark emerald theme & Material Symbols
+            - Gesture & hardware back-button navigation
           draft: false
           prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,6 +1,6 @@
 {
   "name": "ledgerflow",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Fiscal Control & Expense Tracker PWA and Android App",
   "scripts": {
     "build": "node build.js",
