@@ -14,6 +14,9 @@ fs.mkdirSync(distDir, { recursive: true });
 const filesToCopy = [
   'index.html',
   'firebase-config.js',
+  'firebase-app-compat.js',
+  'firebase-auth-compat.js',
+  'firebase-firestore-compat.js',
   'exceljs.min.js',
   'xlsx.full.min.js',
   'manifest.json',

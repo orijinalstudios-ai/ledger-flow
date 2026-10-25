@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1080242233860",
+    "project_id": "ledger-flow-a16d0",
+    "storage_bucket": "ledger-flow-a16d0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1080242233860:android:ecdf940f4ba6db564a4b51",
+        "android_client_info": {
+          "package_name": "com.ledgerflow.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1080242233860-jkqt5usg93i6et7e49ess11clk6r8p2g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCG9i27PdAaZft7OPV9F8nvLur2aWjeHaU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1080242233860-jkqt5usg93i6et7e49ess11clk6r8p2g.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1460,10 +1460,17 @@
     </div>
   </div>
 
-  <!-- Universal Firebase SDK (Works on file:///, http://, and https://) -->
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <!-- Offline-First Local Firebase SDK with CDN Fallback -->
+  <script src="./firebase-app-compat.js"></script>
+  <script src="./firebase-auth-compat.js"></script>
+  <script src="./firebase-firestore-compat.js"></script>
+  <script>
+    if (typeof firebase === 'undefined') {
+      document.write('<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"><\/script>');
+      document.write('<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"><\/script>');
+      document.write('<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"><\/script>');
+    }
+  </script>
 
   <!-- Complete Application JavaScript Logic -->
   <script>
@@ -1522,6 +1529,26 @@
       },
       signInWithGoogle: async () => {
         if (!firebaseAuth) throw new Error('Firebase Auth is initializing. Please verify your internet connection.');
+
+        const isNative = typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform && Capacitor.isNativePlatform();
+        if (isNative) {
+          // If Capacitor native GoogleAuth plugin is available, authenticate natively
+          if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.GoogleAuth) {
+            try {
+              const googleUser = await window.Capacitor.Plugins.GoogleAuth.signIn();
+              if (googleUser && googleUser.authentication && googleUser.authentication.idToken) {
+                const credential = firebase.auth.GoogleAuthProvider.credential(googleUser.authentication.idToken);
+                const cred = await firebaseAuth.signInWithCredential(credential);
+                return cred.user;
+              }
+            } catch (pluginErr) {
+              console.warn('Native GoogleAuth notice:', pluginErr);
+              throw new Error('Google Sign-In on Android requires linking your Firebase SHA-1 fingerprint. Please sign in or register with Email & Password below!');
+            }
+          }
+          throw new Error('Google Sign-In on Android requires linking your Firebase SHA-1 fingerprint. Please sign in or register with Email & Password below!');
+        }
+
         if (window.location.protocol === 'file:') {
           throw new Error('Google Sign-In requires running over HTTP/HTTPS. Open your live app at https://ledgerflow-flax.vercel.app or sign up with Email & Password below!');
         }
@@ -1901,6 +1928,7 @@
     }
 
     // Email Verification Screen Handlers
+    let verificationPollInterval = null;
     function showEmailVerificationScreen(user) {
       const wall = document.getElementById('auth-wall');
       const main = document.getElementById('app-main');
@@ -1917,9 +1945,36 @@
       if (verifyCard) verifyCard.classList.remove('hidden');
       if (emailTarget && user) emailTarget.innerText = user.email || 'your email';
       hideVerifyAlert();
+
+      // Automatic background verification check every 4s
+      clearInterval(verificationPollInterval);
+      verificationPollInterval = setInterval(async () => {
+        if (!currentUser) {
+          clearInterval(verificationPollInterval);
+          return;
+        }
+        try {
+          await currentUser.reload();
+          if (currentUser.emailVerified) {
+            clearInterval(verificationPollInterval);
+            showVerifyAlert('Email verified! Opening your ledger...', 'success');
+            setTimeout(() => {
+              hideEmailVerificationScreen();
+              loadSavedState();
+              renderAll();
+              hideAuthWall();
+              initCloudSync();
+              showToast('Welcome to LedgerFlow! Email verified.');
+            }, 600);
+          }
+        } catch (pollErr) {
+          // Non-blocking catch for background polling
+        }
+      }, 4000);
     }
 
     function hideEmailVerificationScreen() {
+      clearInterval(verificationPollInterval);
       const mainCard = document.getElementById('auth-main-card');
       const verifyCard = document.getElementById('auth-email-verification');
       if (verifyCard) verifyCard.classList.add('hidden');
@@ -2099,7 +2154,9 @@
         } else if (error.code === 'auth/unauthorized-domain') {
           msg = 'Domain not authorized in Firebase Console. Add this domain to Authorized Domains under Authentication > Settings.';
         } else if (error.code === 'auth/popup-blocked') {
-          msg = 'Popup was blocked by your browser. Please allow popups for LedgerFlow.';
+          msg = 'Popup was blocked by your browser. Please allow popups or use Email Sign-In.';
+        } else if (msg.includes('Firebase SHA-1') || (error.message && error.message.includes('disallowed_useragent'))) {
+          switchAuthTab('signin');
         }
         showAuthAlert(msg, 'error');
       } finally {
@@ -2132,6 +2189,8 @@
           msg = 'Invalid email address or password. Please try again.';
         } else if (error.code === 'auth/too-many-requests') {
           msg = 'Too many attempts. Access is temporarily disabled. Please reset password or try again later.';
+        } else if (error.code === 'auth/network-request-failed') {
+          msg = 'Network connection error. Please check your internet connection.';
         }
         showAuthAlert(msg, 'error');
       } finally {
@@ -2173,6 +2232,8 @@
           msg = 'Please enter a valid email address.';
         } else if (error.code === 'auth/weak-password') {
           msg = 'Password is too weak. Please use at least 6 characters.';
+        } else if (error.code === 'auth/network-request-failed') {
+          msg = 'Network connection error. Please check your internet connection.';
         }
         showAuthAlert(msg, 'error');
       } finally {
