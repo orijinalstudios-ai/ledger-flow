@@ -1532,21 +1532,31 @@
 
         const isNative = typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform && Capacitor.isNativePlatform();
         if (isNative) {
-          // If Capacitor native GoogleAuth plugin is available, authenticate natively
-          if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.GoogleAuth) {
+          const fbAuth = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.FirebaseAuthentication;
+          if (fbAuth) {
             try {
-              const googleUser = await window.Capacitor.Plugins.GoogleAuth.signIn();
-              if (googleUser && googleUser.authentication && googleUser.authentication.idToken) {
-                const credential = firebase.auth.GoogleAuthProvider.credential(googleUser.authentication.idToken);
+              const res = await fbAuth.signInWithGoogle();
+              const idToken = res?.credential?.idToken;
+              if (idToken) {
+                const credential = firebase.auth.GoogleAuthProvider.credential(idToken);
                 const cred = await firebaseAuth.signInWithCredential(credential);
                 return cred.user;
+              } else if (res?.user) {
+                return res.user;
               }
+              throw new Error('Google Sign-In was cancelled.');
             } catch (pluginErr) {
-              console.warn('Native GoogleAuth notice:', pluginErr);
-              throw new Error('Google Sign-In on Android requires linking your Firebase SHA-1 fingerprint. Please sign in or register with Email & Password below!');
+              console.error('Native Google Sign-In error:', pluginErr);
+              let msg = pluginErr.message || 'Google Sign-In failed on Android.';
+              if (msg.includes('canceled') || msg.includes('cancelled') || pluginErr.code === '16') {
+                msg = 'Google Sign-In was cancelled.';
+              } else if (msg.includes('10') || msg.includes('DEVELOPER_ERROR')) {
+                msg = 'Google Sign-In setup notice: Please ensure your SHA-1 fingerprint is registered in Firebase Console.';
+              }
+              throw new Error(msg);
             }
           }
-          throw new Error('Google Sign-In on Android requires linking your Firebase SHA-1 fingerprint. Please sign in or register with Email & Password below!');
+          throw new Error('Native authentication module not loaded. Please restart the app.');
         }
 
         if (window.location.protocol === 'file:') {
@@ -1556,6 +1566,14 @@
         return result.user;
       },
       logOut: async () => {
+        try {
+          const isNative = typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform && Capacitor.isNativePlatform();
+          if (isNative && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.FirebaseAuthentication) {
+            await window.Capacitor.Plugins.FirebaseAuthentication.signOut();
+          }
+        } catch (e) {
+          console.warn('Native signOut notice:', e);
+        }
         if (firebaseAuth) await firebaseAuth.signOut();
       },
       sendResetEmail: async (email) => {
